@@ -8,8 +8,9 @@ angular.module("asgardApp")
     $scope.hideHtmlSteps = false;
     $scope.hideShowMoreAmisLink = false;
     $scope.targetAsgTypes = ["Previous", "Next"];
-
     $scope.count= 0;
+
+    var selectionsForSubnet = {};
 
     var isSameStepBeforeOrAfter = function(stepTypeName, index) {
       if (index > 0 && index < $scope.generated.stepsDisplay.length - 1) {
@@ -232,11 +233,44 @@ angular.module("asgardApp")
         $scope.suspendAddToLoadBalancer = $scope.asgOptions.suspendedProcesses.indexOf("AddToLoadBalancer") > -1;
       }
       initStepsDisplay();
+      angular.forEach($scope.environment.subnetPurposes, function(value) {
+        selectionsForSubnet[value] = {
+          securityGroups: [],
+          availabilityZones: [],
+          loadBalancerNames: []
+        }
+      });
+      selectionsForSubnet[$scope.asgOptions.subnetPurpose] = {
+        securityGroups: $scope.lcOptions.securityGroups,
+        availabilityZones: $scope.asgOptions.availabilityZones,
+        loadBalancerNames: $scope.asgOptions.loadBalancerNames
+      };
     });
 
     $scope.$watch("asgOptions.subnetPurpose", function() {
       if ($scope.environment) {
         $scope.vpcId = $scope.environment.purposeToVpcId[$scope.asgOptions.subnetPurpose] || "";
+        $scope.lcOptions.securityGroups = selectionsForSubnet[$scope.asgOptions.subnetPurpose].securityGroups;
+        $scope.asgOptions.availabilityZones = selectionsForSubnet[$scope.asgOptions.subnetPurpose].availabilityZones;
+        $scope.asgOptions.loadBalancerNames = selectionsForSubnet[$scope.asgOptions.subnetPurpose].loadBalancerNames;
+      }
+    });
+
+    $scope.$watch("lcOptions.securityGroups", function() {
+      if ($scope.lcOptions) {
+        selectionsForSubnet[$scope.asgOptions.subnetPurpose].securityGroups = $scope.lcOptions.securityGroups
+      }
+    });
+
+    $scope.$watch("asgOptions.availabilityZones", function() {
+      if ($scope.lcOptions) {
+        selectionsForSubnet[$scope.asgOptions.subnetPurpose].availabilityZones = $scope.asgOptions.availabilityZones
+      }
+    });
+
+    $scope.$watch("asgOptions.loadBalancerNames", function() {
+      if ($scope.lcOptions) {
+        selectionsForSubnet[$scope.asgOptions.subnetPurpose].loadBalancerNames = $scope.asgOptions.loadBalancerNames
       }
     });
 
